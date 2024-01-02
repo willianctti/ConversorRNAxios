@@ -1,0 +1,108 @@
+npx create-expo-app
+
+npm i react-native-picker-select
+npm install @react-native-picker/picker
+npx pod-install			// Seleção de moedas
+
+
+antes de configurar nossa api, fiz a tela sem utilização da mesma. Estilizei e utilizei o picker:
+
+export default function Picker() {
+    const placeholder = {
+        label: 'selecione uma moeda...',
+        value: null,
+        color: '#000'
+    }
+   return (
+    <RNPickerSelect
+    placeholder={placeholder}
+        items={[
+            {key: '1', label: 'USD', value: 'USD'},
+            {key: '2', label: 'EUR', value: 'EUR'},
+        ]}
+        onValueChange={ (valor) => console.log(valor)}
+        style={{
+            inputIOS: {
+                fontSize: 20,
+                color: '#000'
+            },
+            inputAndroid: {
+                fontSize: 20,
+                color: '#000'
+            }
+        }}
+    />
+   )
+}
+
+importei e usei como necessário.
+
+				agora vamos configurar nossa api:
+
+criei uma folder services para manter os dados de nossa api>
+
+import axios from "axios";
+// https://economia.awesomeapi.com.br/json/all/USD-BRL
+const api = axios.create({
+    baseURL: 'https://economia.awesomeapi.com.br/json/'
+});
+export default api;
+
+em nosso app principal (aonde vamos chamar a api) importamos o useState e o useEffect e o iniciamos
+
+
+criei todos os useState necessários e iniciei nosso useEffect:
+
+  const [moedas, setMoedas] = useState([]);
+  const [loading, setLoading] = useState(true)
+  const [selectedMoeda, setSelectedMoeda] = useState(null);
+  const [moedaBValue, setMoedaBValue] = useState(0);
+
+
+  useEffect(() => {
+    async function loadMoedas() {
+      const response = await api.get('all')
+      let arrayMoedas = []
+      Object.keys(response.data).map((key) => {
+          arrayMoedas.push({
+            key: key,
+            label: key,
+            value: key
+          })
+      }) 
+      setMoedas(arrayMoedas)
+      setLoading(false);
+    }
+
+    loadMoedas();
+  }, [])
+
+
+envio a moedas do useState por props para nosso componente Picker:
+<Picker moedas={moedas}/>
+
+
+
+recebemos por props: 
+export default function Picker(props) {
+
+
+   <RNPickerSelect
+    placeholder={placeholderr}
+        items={props.moedas}			//props
+        onValueChange={ (valor) => console.log(valor)}
+        style={{
+            inputIOS: {
+                fontSize: 20,
+                color: '#000'
+            },
+            inputAndroid: {
+                fontSize: 20,
+                color: '#000'
+            }
+        }}
+    />
+
+passamos também a prop de pegar a moeda selecionada:
+<Picker moedas={moedas} onChange={ (moeda) => setSelectedMoeda(moeda) }/>
+onValueChange={ (valor) => props.onChange(valor)}
